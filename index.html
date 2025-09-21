@@ -116,15 +116,14 @@
         .item-card {
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
             padding: 1rem;
             border-radius: 1rem;
             background-color: rgb(var(--surface));
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
             transition: transform 0.2s;
             cursor: pointer;
-            aspect-ratio: 1 / 1; /* Make the button square */
         }
 
         .item-card:hover {
@@ -134,11 +133,21 @@
 
         .item-grid {
             display: grid;
-            gap: 1rem;
+            /* Mobile gap is now smaller */
+            gap: 0.5rem; 
             /* Use the CSS variable for dynamic columns */
             grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+            /* This is the key fix: makes all rows the same height */
+            grid-auto-rows: 1fr;
         }
         
+        /* Increase gap on medium and larger screens */
+        @media (min-width: 768px) {
+            .item-grid {
+                gap: 1rem;
+            }
+        }
+
         /* Navigation Rail */
         .nav-rail {
             background-color: rgb(var(--surface));
@@ -499,14 +508,15 @@
     <script>
         // Define initial catalog data
         const initialProducts = [
-            { id: 'p_1', name: 'Fresh Salad', price: 7.99, image: '🥗' },
-            { id: 'p_2', name: 'Cheeseburger', price: 9.50, image: '🍔' },
-            { id: 'p_3', name: 'Fries', price: 3.25, image: '🍟' },
-            { id: 'p_4', name: 'Hot Dog', price: 4.00, image: '🌭' },
-            { id: 'p_5', name: 'Pizza Slice', price: 5.50, image: '🍕' },
-            { id: 'p_6', name: 'Soda', price: 2.00, image: '🥤' },
-            { id: 'p_7', name: 'Chocolate Chip Cookie', price: 1.50, image: '🍪' },
-            { id: 'p_8', name: 'Ice Cream Cone', price: 2.75, image: '🍦' },
+            { id: 'p_1', name: 'Chocolate Chip Cookie', price: 2.50, image: '🍪' },
+            { id: 'p_2', name: 'Lemonade', price: 1.00, image: '🍋' },
+            { id: 'p_3', name: 'Chocolate Brownie', price: 1.75, image: '🍫' },
+            { id: 'p_4', name: 'Iced Coffee', price: 3.50, image: '☕' },
+            { id: 'p_5', name: 'Banana Bread', price: 4.25, image: '🍌' },
+            { id: 'p_6', name: 'Strawberry Smoothie', price: 5.00, image: '🍓' },
+            { id: 'p_7', name: 'Blueberry Muffin', price: 2.75, image: '🫐' },
+            { id: 'p_8', name: 'Hot Tea', price: 2.00, image: '🍵' },
+            { id: 'p_9', name: 'Croissant', price: 3.00, image: '🥐' },
         ];
 
         // --- DOM Elements ---
@@ -688,9 +698,10 @@
             filteredItems.forEach(item => {
                 const itemCard = document.createElement('div');
                 itemCard.className = 'item-card';
+                // Simplified the inner HTML to remove the unnecessary nested flex container.
                 itemCard.innerHTML = `
                     <span class="text-4xl mb-2">${item.image}</span>
-                    <h3 class="title-small font-medium text-center">${item.name}</h3>
+                    <h3 class="title-small font-medium flex-grow text-center">${item.name}</h3>
                     <p class="body-medium on-surface-variant-text">£${item.price.toFixed(2)}</p>
                 `;
                 itemCard.dataset.id = item.id;
