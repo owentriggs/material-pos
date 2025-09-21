@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier POS System</title>
+    <!-- Tailwind CSS with JIT CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: 25, 120, 240;
+            --on-primary: 255, 255, 255;
+            --primary-container: 220, 235, 255;
+            --on-primary-container: 0, 30, 60;
+            --secondary: 105, 170, 120;
+            --on-secondary: 255, 255, 255;
+            --secondary-container: 200, 230, 210;
+            --on-secondary-container: 10, 45, 20;
+            --surface: 255, 255, 255;
+            --on-surface: 20, 20, 20;
+            --surface-container-low: 245, 245, 245;
+            --outline: 180, 180, 180;
+            --error: 180, 40, 40;
+            --on-error: 255, 255, 255;
+        }
+
+        /* Dark Mode colors */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: 155, 205, 255;
+                --on-primary: 0, 30, 60;
+                --primary-container: 0, 30, 60;
+                --on-primary-container: 255, 255, 255;
+                --secondary: 180, 220, 190;
+                --on-secondary: 30, 50, 20;
+                --secondary-container: 30, 50, 20;
+                --on-secondary-container: 255, 255, 255;
+                --surface: 20, 20, 20;
+                --on-surface: 255, 255, 255;
+                --surface-container-low: 30, 30, 30;
+                --outline: 70, 70, 70;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: rgb(var(--surface-container-low));
+            color: rgb(var(--on-surface));
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Material 3 Color Roles */
+        .primary-bg { background-color: rgb(var(--primary)); }
+        .on-primary-text { color: rgb(var(--on-primary)); }
+        .primary-container-bg { background-color: rgb(var(--primary-container)); }
+        .on-primary-container-text { color: rgb(var(--on-primary-container)); }
+        .secondary-bg { background-color: rgb(var(--secondary)); }
+        .on-secondary-text { color: rgb(var(--on-secondary)); }
+        .secondary-container-bg { background-color: rgb(var(--secondary-container)); }
+        .on-secondary-container-text { color: rgb(var(--on-secondary-container)); }
+        .surface-bg { background-color: rgb(var(--surface)); }
+        .on-surface-text { color: rgb(var(--on-surface)); }
+        .surface-container-low-bg { background-color: rgb(var(--surface-container-low)); }
+        .outline-border { border-color: rgb(var(--outline)); }
+        .on-surface-variant-text { color: rgba(var(--on-surface), 0.7); }
+        .error-text { color: rgb(var(--error)); }
+
+        /* Material 3 Typography */
+        .headline-medium { font-size: 28px; line-height: 36px; font-weight: 400; }
+        .title-large { font-size: 22px; line-height: 28px; font-weight: 400; }
+        .title-medium { font-size: 16px; line-height: 24px; font-weight: 500; }
+        .title-small { font-size: 14px; line-height: 20px; font-weight: 500; }
+        .body-large { font-size: 16px; line-height: 24px; font-weight: 400; }
+        .body-medium { font-size: 14px; line-height: 20px; font-weight: 400; }
+        .label-large { font-size: 14px; line-height: 20px; font-weight: 500; }
+        .label-medium { font-size: 12px; line-height: 16px; font-weight: 500; }
+
+        /* Material 3 Buttons & Components */
+        .filled-button {
+            background-color: rgb(var(--primary));
+            color: rgb(var(--on-primary));
+        }
+        .filled-button-error {
+            background-color: rgb(var(--error));
+            color: rgb(var(--on-error));
+        }
+        .outlined-button {
+            border: 1px solid rgb(var(--outline));
+            color: rgb(var(--primary));
+        }
+        .text-button {
+            color: rgb(var(--primary));
+        }
+        .icon-button {
+            color: rgba(var(--on-surface), 0.7);
+            transition: color 0.2s;
+        }
+        .icon-button:hover {
+            color: rgb(var(--on-surface));
+        }
+
+        .item-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 1rem;
+            background-color: rgb(var(--surface));
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .item-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        @media (min-width: 768px) {
+            .item-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) {
+            .item-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        /* Navigation Rail */
+        .nav-rail {
+            background-color: rgb(var(--surface));
+            box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.1);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            color: rgba(var(--on-surface), 0.7);
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: rgb(var(--on-primary-container));
+            background-color: rgb(var(--primary-container));
+            border-radius: 1.5rem;
+        }
+        .nav-item-icon {
+            fill: currentColor;
+            width: 24px;
+            height: 24px;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Dialog Animation */
+        .dialog {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .dialog.open {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Snackbar/Message Animation */
+        .snackbar {
+            opacity: 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        .snackbar.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="flex h-screen">
+
+    <!-- Navigation Rail -->
+    <nav class="nav-rail w-24 flex flex-col items-center py-6">
+        <a href="#sale" class="nav-item active" data-view="sale">
+            <svg class="nav-item-icon" viewBox="0 0 24 24">
+                <path d="M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10zm1 17.935V16h3v-2h-3v-3h-2v3h-3v2h3v3.935A8.026 8.026 0 0 0 12 20a8.026 8.026 0 0 0 1-2.065zM12 4c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8z"/>
+            </svg>
+            <span class="label-medium">Sale</span>
+        </a>
+        <a href="#items" class="nav-item mt-4" data-view="items">
+            <svg class="nav-item-icon" viewBox="0 0 24 24">
+                <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+            <span class="label-medium">Items</span>
+        </a>
+        <a href="#settings" class="nav-item mt-4" data-view="settings">
+            <svg class="nav-item-icon" viewBox="0 0 24 24">
+                <path d="M19.43 12.98c.04-.31.07-.63.07-.98s-.03-.67-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.62-1l-.36-2.61c-.06-.24-.28-.42-.52-.42h-4c-.24 0-.46.18-.52.42l-.36 2.61c.56.27-1.1.61-1.62 1l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.49.12.64l2.11 1.65c-.04.31-.07.63-.07.98s.03.67.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.39 1.06.73 1.62 1l.36 2.61c.06.24.28.42.52.42h4c.24 0 .46-.18.52-.42l.36-2.61c.56-.27 1.1-.61 1.62-1l2.49 1c.22.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+            </svg>
+            <span class="label-medium">Settings</span>
+        </a>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col md:flex-row">
+        <!-- Sale View -->
+        <div id="sale-view" class="flex-1 p-6 overflow-y-auto" data-view-content>
+            <h1 class="headline-medium mb-6 on-surface-text">Quick Sale</h1>
+            <div id="item-panel" class="flex flex-col h-full">
+                <!-- Removed flex-grow and reduced vertical padding for a thinner look -->
+                <input type="text" id="item-search-input" placeholder="Search items..." class="px-4 py-2 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary mb-6">
+                <div id="item-grid" class="item-grid flex-grow">
+                    <!-- Item cards will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Management View -->
+        <div id="items-view" class="flex-1 p-6 overflow-y-auto hidden" data-view-content>
+            <div class="flex items-center justify-between pb-4 mb-4 border-b outline-border">
+                <h1 class="headline-medium on-surface-text">Item Catalog</h1>
+                <button id="add-item-btn" class="filled-button px-4 py-2 rounded-xl label-large">Add New Item</button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4">
+                <ul id="catalog-list" class="space-y-4">
+                    <!-- Catalog items will be rendered here -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="flex-1 p-6 overflow-y-auto hidden" data-view-content>
+            <h1 class="headline-medium mb-6 on-surface-text">Settings</h1>
+            <div class="surface-bg rounded-2xl p-6 shadow-md">
+                <h3 class="title-large mb-4">Tax Configuration</h3>
+                <p class="body-medium on-surface-variant-text mb-4">Set the sales tax percentage. The current tax rate is <span id="current-tax-rate" class="font-bold"></span>%.</p>
+                <div class="flex items-end gap-4">
+                    <div class="flex-grow">
+                        <label for="tax-rate-input" class="label-medium">Tax Percentage</label>
+                        <input type="number" id="tax-rate-input" step="0.01" min="0" max="100" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., 5 for 5%">
+                    </div>
+                    <button id="save-tax-btn" class="filled-button px-4 py-3 rounded-xl label-large">Save</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cart and Checkout Panel (Right) -->
+        <div id="cart-panel" class="w-full md:w-96 flex flex-col p-6 border-t md:border-t-0 md:border-l outline-border surface-bg">
+            <h2 class="title-large mb-4 on-surface-text">Current Order</h2>
+            <div class="flex-grow overflow-y-auto pr-2">
+                <ul id="cart-list" class="space-y-4">
+                    <!-- Cart items will be rendered here -->
+                </ul>
+            </div>
+            
+            <!-- Cart Summary & Actions -->
+            <div class="mt-4 pt-4 border-t outline-border on-surface-text">
+                <div class="flex justify-between title-medium mb-1">
+                    <span>Subtotal</span>
+                    <span id="subtotal-amount">£0.00</span>
+                </div>
+                <div class="flex justify-between title-medium mb-1">
+                    <span>Tax (<span id="tax-percentage">5</span>%)</span>
+                    <span id="tax-amount">£0.00</span>
+                </div>
+                <div class="flex justify-between headline-medium mt-2 mb-4">
+                    <span>Total</span>
+                    <span id="total-amount">£0.00</span>
+                </div>
+                <!-- M3 Button Group -->
+                <div class="flex gap-2 mb-4">
+                    <button id="void-btn" class="outlined-button flex-1 py-3 rounded-2xl font-medium label-large">Void All</button>
+                    <button id="checkout-btn" class="filled-button flex-1 py-3 rounded-2xl font-medium label-large">
+                        Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Dialog Overlays for different pop-ups -->
+    <div id="dialog-overlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        
+        <!-- Checkout Dialog -->
+        <div id="checkout-dialog" class="dialog hidden surface-bg rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <h3 class="title-large on-surface-text">Select Payment Method</h3>
+            <div id="checkout-steps" class="space-y-4">
+                <!-- Step 1: Payment Method Selection -->
+                <div id="payment-step-1">
+                    <button id="pay-cash-btn" class="filled-button w-full py-3 rounded-xl label-large mb-2">Pay with Cash</button>
+                    <button id="pay-card-btn" class="filled-button w-full py-3 rounded-xl label-large mb-2">Pay with Card</button>
+                    <button id="checkout-cancel-btn" class="text-button w-full py-3 rounded-xl label-large">Cancel</button>
+                </div>
+                <!-- Step 2: Cash Payment -->
+                <div id="payment-step-2" class="hidden">
+                    <h4 class="title-medium on-surface-text">Amount Due: <span id="cash-amount-due" class="font-bold"></span></h4>
+                    <label class="label-medium block mt-2 mb-1">Cash Received</label>
+                    <input type="number" id="cash-received-input" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter cash amount">
+                    
+                    <!-- Preset cash buttons -->
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="1">£1</button>
+                        <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="5">£5</button>
+                        <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="10">£10</button>
+                        <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="20">£20</button>
+                        <button id="exact-cash-btn" class="outlined-button px-4 py-2 rounded-xl label-large">Exact</button>
+                    </div>
+
+                    <p id="change-due" class="body-medium mt-4">Change Due: <span id="change-amount" class="font-bold">£0.00</span></p>
+                    <button id="cash-confirm-btn" class="filled-button w-full py-3 rounded-xl label-large mt-4">Complete Transaction</button>
+                    <button id="cash-back-btn" class="text-button w-full py-3 rounded-xl label-large mt-2">Back</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add/Edit Item Form Dialog -->
+        <div id="item-form-dialog" class="dialog hidden surface-bg rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <h3 id="item-form-title" class="title-large on-surface-text">Add New Item</h3>
+            <form id="item-form" class="space-y-4">
+                <div>
+                    <label for="item-name" class="label-medium">Item Name</label>
+                    <input type="text" id="item-name" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., Apple Pie" required>
+                </div>
+                <div>
+                    <label for="item-price" class="label-medium">Price</label>
+                    <input type="number" id="item-price" step="0.01" min="0" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., 5.99" required>
+                </div>
+                <div>
+                    <label for="item-emoji" class="label-medium">Emoji</label>
+                    <input type="text" id="item-emoji" maxlength="2" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., 🥧" required>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="item-form-cancel-btn" class="text-button px-4 py-2 rounded-xl font-medium label-large">Cancel</button>
+                    <button type="submit" class="filled-button px-4 py-2 rounded-xl font-medium label-large">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Snackbar for user feedback -->
+    <div id="snackbar" class="snackbar fixed bottom-4 md:bottom-auto md:top-4 left-1/2 -translate-x-1/2 primary-container-bg on-primary-container-text px-4 py-3 rounded-xl shadow-xl z-50 text-sm font-medium">
+        <span id="snackbar-message"></span>
+    </div>
+
+    <script>
+        // Define initial catalog data
+        const initialProducts = [
+            { id: 'p_1', name: 'Fresh Salad', price: 7.99, image: '🥗' },
+            { id: 'p_2', name: 'Cheeseburger', price: 9.50, image: '🍔' },
+            { id: 'p_3', name: 'Fries', price: 3.25, image: '🍟' },
+            { id: 'p_4', name: 'Hot Dog', price: 4.00, image: '🌭' },
+            { id: 'p_5', name: 'Pizza Slice', price: 5.50, image: '🍕' },
+            { id: 'p_6', name: 'Soda', price: 2.00, image: '🥤' },
+            { id: 'p_7', name: 'Chocolate Chip Cookie', price: 1.50, image: '🍪' },
+            { id: 'p_8', name: 'Ice Cream Cone', price: 2.75, image: '🍦' },
+        ];
+
+        // --- DOM Elements ---
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewContents = document.querySelectorAll('[data-view-content]');
+        const itemGrid = document.getElementById('item-grid');
+        const cartList = document.getElementById('cart-list');
+        const subtotalAmount = document.getElementById('subtotal-amount');
+        const taxAmount = document.getElementById('tax-amount');
+        const totalAmount = document.getElementById('total-amount');
+        const taxPercentageSpan = document.getElementById('tax-percentage');
+        const dialogOverlay = document.getElementById('dialog-overlay');
+        const checkoutDialog = document.getElementById('checkout-dialog');
+        const itemFormDialog = document.getElementById('item-form-dialog');
+        const catalogList = document.getElementById('catalog-list');
+        const snackbar = document.getElementById('snackbar');
+        const snackbarMessage = document.getElementById('snackbar-message');
+        const itemSearchInput = document.getElementById('item-search-input');
+        const taxRateInput = document.getElementById('tax-rate-input');
+        const currentTaxRateSpan = document.getElementById('current-tax-rate');
+        const cashReceivedInput = document.getElementById('cash-received-input');
+        const cashPresetButtons = document.querySelectorAll('.cash-preset-btn');
+        const exactCashButton = document.getElementById('exact-cash-btn');
+
+        // --- State Management ---
+        let cart = [];
+        let products = [];
+        let editItemIndex = -1;
+        let taxRate = 0.05; // Default tax rate
+
+        // --- Core Functions ---
+
+        /**
+         * Loads the tax rate and item catalog from localStorage.
+         */
+        const loadState = () => {
+            const storedCatalog = localStorage.getItem('posCatalog');
+            if (storedCatalog) {
+                products = JSON.parse(storedCatalog);
+            } else {
+                products = initialProducts;
+                saveCatalog();
+            }
+
+            const storedTax = localStorage.getItem('posTaxRate');
+            if (storedTax) {
+                taxRate = parseFloat(storedTax);
+            }
+        };
+
+        /**
+         * Saves the current catalog to localStorage.
+         */
+        const saveCatalog = () => {
+            localStorage.setItem('posCatalog', JSON.stringify(products));
+        };
+
+        /**
+         * Saves the current tax rate to localStorage.
+         */
+        const saveTaxRate = () => {
+            localStorage.setItem('posTaxRate', taxRate);
+        };
+
+        /**
+         * Shows a temporary snackbar message for user feedback.
+         * @param {string} message - The message to display.
+         */
+        const showSnackbar = (message) => {
+            snackbarMessage.textContent = message;
+            snackbar.classList.add('show');
+            setTimeout(() => {
+                snackbar.classList.remove('show');
+            }, 3000);
+        };
+
+        /**
+         * Shows a dialog modal and animates it in.
+         * @param {HTMLElement} dialogElement - The dialog to show.
+         */
+        const showDialog = (dialogElement) => {
+            dialogOverlay.classList.remove('hidden');
+            dialogOverlay.classList.add('flex');
+            dialogElement.classList.remove('hidden');
+            setTimeout(() => dialogElement.classList.add('open'), 10);
+        };
+
+        /**
+         * Hides all dialogs.
+         */
+        const hideAllDialogs = () => {
+            checkoutDialog.classList.remove('open', 'flex');
+            itemFormDialog.classList.remove('open', 'flex');
+
+            setTimeout(() => {
+                dialogOverlay.classList.remove('flex');
+                dialogOverlay.classList.add('hidden');
+                checkoutDialog.classList.add('hidden');
+                itemFormDialog.classList.add('hidden');
+            }, 200);
+        };
+
+        /**
+         * Switches the active view based on the nav item clicked.
+         * @param {string} viewId - The ID of the view to show.
+         */
+        const showView = (viewId) => {
+            viewContents.forEach(view => {
+                if (view.id === `${viewId}-view`) {
+                    view.classList.remove('hidden');
+                } else {
+                    view.classList.add('hidden');
+                }
+            });
+            navItems.forEach(nav => {
+                if (nav.dataset.view === viewId) {
+                    nav.classList.add('active');
+                } else {
+                    nav.classList.remove('active');
+                }
+            });
+            // Update UI for the new view
+            if (viewId === 'sale') {
+                renderItems();
+            } else if (viewId === 'items') {
+                renderCatalogList();
+            } else if (viewId === 'settings') {
+                taxRateInput.value = (taxRate * 100).toFixed(2);
+                currentTaxRateSpan.textContent = (taxRate * 100).toFixed(2);
+            }
+        };
+
+        /**
+         * Renders the item buttons in the main grid.
+         * @param {Array} filteredItems - An optional array of items to filter the display.
+         */
+        const renderItems = (filteredItems = products) => {
+            itemGrid.innerHTML = '';
+            filteredItems.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <span class="text-4xl mb-2">${item.image}</span>
+                    <h3 class="title-small font-medium text-center">${item.name}</h3>
+                    <p class="body-medium on-surface-variant-text">£${item.price.toFixed(2)}</p>
+                `;
+                itemCard.dataset.id = item.id;
+                itemCard.addEventListener('click', () => addItemToCart(item));
+                itemGrid.appendChild(itemCard);
+            });
+        };
+
+        /**
+         * Renders the cart items in the side panel.
+         */
+        const renderCart = () => {
+            cartList.innerHTML = '';
+            if (cart.length === 0) {
+                cartList.innerHTML = `<li class="body-medium on-surface-variant-text text-center py-8">Cart is empty.</li>`;
+                document.getElementById('checkout-btn').disabled = true;
+                document.getElementById('void-btn').disabled = true;
+            } else {
+                document.getElementById('checkout-btn').disabled = false;
+                document.getElementById('void-btn').disabled = false;
+                cart.forEach((item, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'flex items-center justify-between rounded-xl p-4 surface-container-low-bg on-surface-text shadow-sm';
+                    listItem.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <span class="text-2xl">${item.image}</span>
+                            <div class="flex-grow">
+                                <h4 class="title-medium">${item.name}</h4>
+                                <span class="label-large">£${(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xl">${item.quantity}</span>
+                            <button class="remove-item-btn icon-button p-2 rounded-full" data-index="${index}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10-10-4.477-10-10 4.477-10 10-10zm0 1c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9 4.03-9 9-9zm4.707 6.293l-4.707 4.707-4.707-4.707-.707.707 4.707 4.707-4.707 4.707.707.707 4.707-4.707 4.707 4.707.707-.707-4.707-4.707 4.707-4.707z"/></svg>
+                            </button>
+                        </div>
+                    `;
+                    cartList.appendChild(listItem);
+                });
+            }
+            updateTotals();
+        };
+
+        /**
+         * Calculates and updates the total price, tax, and subtotal.
+         */
+        const updateTotals = () => {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * taxRate;
+            const total = subtotal + tax;
+            
+            taxPercentageSpan.textContent = (taxRate * 100).toFixed(2);
+            subtotalAmount.textContent = `£${subtotal.toFixed(2)}`;
+            taxAmount.textContent = `£${tax.toFixed(2)}`;
+            totalAmount.textContent = `£${total.toFixed(2)}`;
+        };
+
+        /**
+         * Adds an item to the cart or increments its quantity.
+         * @param {object} itemToAdd - The item object to add.
+         */
+        const addItemToCart = (itemToAdd) => {
+            const existingItem = cart.find(item => item.id === itemToAdd.id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ ...itemToAdd, quantity: 1 });
+            }
+            renderCart();
+            showSnackbar(`Added ${itemToAdd.name} to cart.`);
+        };
+        
+        // --- Event Listeners ---
+        
+        // Navigation Rail
+        navItems.forEach(nav => {
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                const viewId = nav.dataset.view;
+                showView(viewId);
+            });
+        });
+
+        // Checkout & Void
+        document.getElementById('checkout-btn').addEventListener('click', () => {
+            if (cart.length === 0) {
+                showSnackbar("Cart is empty. Add items to checkout.");
+                return;
+            }
+            document.getElementById('cash-amount-due').textContent = totalAmount.textContent;
+            document.getElementById('payment-step-1').classList.remove('hidden');
+            document.getElementById('payment-step-2').classList.add('hidden');
+            cashReceivedInput.value = '';
+            document.getElementById('change-amount').textContent = '£0.00';
+            showDialog(checkoutDialog);
+        });
+        
+        document.getElementById('void-btn').addEventListener('click', () => {
+            if (cart.length > 0) {
+                cart = []; // Void the whole order
+                renderCart();
+                showSnackbar(`Order voided.`);
+            } else {
+                showSnackbar("Cart is already empty.");
+            }
+        });
+
+        // Event listener for removing individual items from the cart
+        cartList.addEventListener('click', (e) => {
+            const removeButton = e.target.closest('.remove-item-btn');
+            if (removeButton) {
+                const index = parseInt(removeButton.dataset.index);
+                const removedItem = cart.splice(index, 1)[0];
+                renderCart();
+                showSnackbar(`Removed one ${removedItem.name}.`);
+            }
+        });
+
+        // Checkout Dialog Logic
+        document.getElementById('pay-cash-btn').addEventListener('click', () => {
+            document.getElementById('payment-step-1').classList.add('hidden');
+            document.getElementById('payment-step-2').classList.remove('hidden');
+        });
+
+        document.getElementById('pay-card-btn').addEventListener('click', () => {
+            showSnackbar('Processing card payment...');
+            setTimeout(() => {
+                showSnackbar('Payment successful!');
+                hideAllDialogs();
+                cart = [];
+                renderCart();
+            }, 1500);
+        });
+        
+        document.getElementById('checkout-cancel-btn').addEventListener('click', hideAllDialogs);
+        document.getElementById('cash-back-btn').addEventListener('click', () => {
+            document.getElementById('payment-step-1').classList.remove('hidden');
+            document.getElementById('payment-step-2').classList.add('hidden');
+        });
+
+        cashReceivedInput.addEventListener('input', (e) => {
+            const received = parseFloat(e.target.value) || 0;
+            const total = parseFloat(totalAmount.textContent.substring(1));
+            const change = received - total;
+            document.getElementById('change-amount').textContent = `£${Math.max(0, change).toFixed(2)}`;
+        });
+
+        // Preset cash buttons logic
+        cashPresetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.dataset.value;
+                cashReceivedInput.value = parseFloat(value).toFixed(2);
+                cashReceivedInput.dispatchEvent(new Event('input'));
+            });
+        });
+
+        // Exact cash button logic
+        exactCashButton.addEventListener('click', () => {
+            const total = parseFloat(totalAmount.textContent.substring(1));
+            cashReceivedInput.value = total.toFixed(2);
+            cashReceivedInput.dispatchEvent(new Event('input'));
+        });
+        
+        document.getElementById('cash-confirm-btn').addEventListener('click', () => {
+            const received = parseFloat(cashReceivedInput.value);
+            const total = parseFloat(totalAmount.textContent.substring(1));
+            if (received >= total) {
+                showSnackbar('Transaction complete. Change due has been calculated.');
+                hideAllDialogs();
+                cart = [];
+                renderCart();
+            } else {
+                showSnackbar('Insufficient cash received.');
+            }
+        });
+
+        // Items Management Logic
+        document.getElementById('add-item-btn').addEventListener('click', () => {
+            document.getElementById('item-form-title').textContent = 'Add New Item';
+            document.getElementById('item-form').reset();
+            editItemIndex = -1; // Reset edit state
+            showDialog(itemFormDialog);
+        });
+        
+        document.getElementById('item-form-cancel-btn').addEventListener('click', () => {
+            hideAllDialogs();
+        });
+        
+        document.getElementById('item-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('item-name').value;
+            const price = parseFloat(document.getElementById('item-price').value);
+            const emoji = document.getElementById('item-emoji').value;
+
+            if (editItemIndex !== -1) {
+                // Logic for editing an existing item
+                products[editItemIndex] = { ...products[editItemIndex], name, price, image: emoji };
+                showSnackbar(`Updated "${name}".`);
+            } else {
+                // Logic for adding a new item
+                const newItem = {
+                    id: `p_${products.length + 1}`,
+                    name,
+                    price,
+                    image: emoji,
+                };
+                products.push(newItem);
+                showSnackbar(`Added new item: "${name}".`);
+            }
+            saveCatalog();
+            hideAllDialogs();
+            renderCatalogList();
+            renderItems();
+        });
+
+        const renderCatalogList = () => {
+            catalogList.innerHTML = '';
+            products.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'flex items-center justify-between rounded-xl p-4 surface-container-low-bg on-surface-text shadow-sm';
+                listItem.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${item.image}</span>
+                        <div>
+                            <h4 class="title-medium">${item.name}</h4>
+                            <span class="label-large">£${item.price.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="edit-item-btn text-button p-2 rounded-full" data-index="${index}">Edit</button>
+                        <button class="delete-item-btn text-button p-2 rounded-full error-text" data-index="${index}">Delete</button>
+                    </div>
+                `;
+                catalogList.appendChild(listItem);
+            });
+        };
+
+        catalogList.addEventListener('click', (e) => {
+            const editButton = e.target.closest('.edit-item-btn');
+            const deleteButton = e.target.closest('.delete-item-btn');
+            
+            if (editButton) {
+                const index = parseInt(editButton.dataset.index);
+                const item = products[index];
+                document.getElementById('item-form-title').textContent = `Edit "${item.name}"`;
+                document.getElementById('item-name').value = item.name;
+                document.getElementById('item-price').value = item.price;
+                document.getElementById('item-emoji').value = item.image;
+                editItemIndex = index;
+                showDialog(itemFormDialog);
+            } else if (deleteButton) {
+                const index = parseInt(deleteButton.dataset.index);
+                const removedItem = products.splice(index, 1)[0];
+                saveCatalog();
+                renderCatalogList();
+                renderItems();
+                showSnackbar(`Removed "${removedItem.name}" from catalog.`);
+            }
+        });
+
+        // Search functionality
+        itemSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = products.filter(item => 
+                item.name.toLowerCase().includes(searchTerm)
+            );
+            renderItems(filtered);
+        });
+
+        // Settings View Logic
+        document.getElementById('save-tax-btn').addEventListener('click', () => {
+            let newTaxRate = parseFloat(taxRateInput.value) / 100;
+            if (newTaxRate >= 0 && newTaxRate <= 1) {
+                taxRate = newTaxRate;
+                saveTaxRate();
+                updateTotals();
+                currentTaxRateSpan.textContent = (taxRate * 100).toFixed(2);
+                showSnackbar(`Tax rate updated to ${taxRate * 100}%.`);
+            } else {
+                showSnackbar("Please enter a valid percentage between 0 and 100.");
+            }
+        });
+
+        // Initial setup
+        window.onload = () => {
+            loadState();
+            renderItems();
+            renderCart();
+            showView('sale');
+        };
+
+    </script>
+</body>
+</html>
