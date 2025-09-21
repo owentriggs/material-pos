@@ -116,15 +116,14 @@
         .item-card {
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
             padding: 1rem;
             border-radius: 1rem;
             background-color: rgb(var(--surface));
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
             transition: transform 0.2s;
             cursor: pointer;
-            aspect-ratio: 1 / 1; /* Make the button square */
         }
 
         .item-card:hover {
@@ -137,6 +136,8 @@
             gap: 1rem;
             /* Use the CSS variable for dynamic columns */
             grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+            /* This is the key fix: makes all rows the same height */
+            grid-auto-rows: 1fr;
         }
         
         /* Navigation Rail */
@@ -502,6 +503,12 @@
             { id: 'p_1', name: 'Chocolate Chip Cookie', price: 2.50, image: '🍪' },
             { id: 'p_2', name: 'Lemonade', price: 1.00, image: '🍋' },
             { id: 'p_3', name: 'Chocolate Brownie', price: 1.75, image: '🍫' },
+            { id: 'p_4', name: 'Iced Coffee', price: 3.50, image: '☕' },
+            { id: 'p_5', name: 'Banana Bread', price: 4.25, image: '🍌' },
+            { id: 'p_6', name: 'Strawberry Smoothie', price: 5.00, image: '🍓' },
+            { id: 'p_7', name: 'Blueberry Muffin', price: 2.75, image: '🫐' },
+            { id: 'p_8', name: 'Hot Tea', price: 2.00, image: '🍵' },
+            { id: 'p_9', name: 'Croissant', price: 3.00, image: '🥐' },
         ];
 
         // --- DOM Elements ---
@@ -684,8 +691,10 @@
                 const itemCard = document.createElement('div');
                 itemCard.className = 'item-card';
                 itemCard.innerHTML = `
-                    <span class="text-4xl mb-2">${item.image}</span>
-                    <h3 class="title-small font-medium text-center">${item.name}</h3>
+                    <div class="flex flex-col items-center flex-grow text-center mb-2">
+                        <span class="text-4xl mb-2">${item.image}</span>
+                        <h3 class="title-small font-medium">${item.name}</h3>
+                    </div>
                     <p class="body-medium on-surface-variant-text">£${item.price.toFixed(2)}</p>
                 `;
                 itemCard.dataset.id = item.id;
