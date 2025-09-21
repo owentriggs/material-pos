@@ -6,10 +6,10 @@
     <title>Cashier POS System</title>
     <!-- Tailwind CSS with JIT CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font from Google Fonts -->
+    <!-- Inter & Roboto Flex Fonts from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Flex:opsz,wght@8..144,400;8..144,700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: 25, 120, 240;
@@ -78,7 +78,14 @@
         .body-medium { font-size: 14px; line-height: 20px; font-weight: 400; }
         .label-large { font-size: 14px; line-height: 20px; font-weight: 500; }
         .label-medium { font-size: 12px; line-height: 16px; font-weight: 500; }
-
+        /* Custom styles for new display text */
+        .display-large {
+            font-family: 'Roboto Flex', sans-serif;
+            font-size: 4rem; /* 64px */
+            line-height: 1;
+            font-weight: 400;
+        }
+        
         /* Material 3 Buttons & Components */
         .filled-button {
             background-color: rgb(var(--primary));
@@ -300,14 +307,15 @@
                     <button id="pay-card-btn" class="filled-button w-full py-3 rounded-xl label-large mb-2">Pay with Card</button>
                     <button id="checkout-cancel-btn" class="text-button w-full py-3 rounded-xl label-large">Cancel</button>
                 </div>
-                <!-- Step 2: Cash Payment -->
-                <div id="payment-step-2" class="hidden">
-                    <h4 class="title-medium on-surface-text">Amount Due: <span id="cash-amount-due" class="font-bold"></span></h4>
-                    <label class="label-medium block mt-2 mb-1">Cash Received</label>
-                    <input type="number" id="cash-received-input" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter cash amount">
+                <!-- Stage 1: Cash Amount Input -->
+                <div id="cash-stage-1" class="hidden flex flex-col items-center text-center">
+                    <p class="body-medium on-surface-variant-text mb-2">Total Due</p>
+                    <p id="total-due-display" class="on-surface-text display-large mb-4">£0.00</p>
+                    <label for="cash-received-input" class="label-medium block mb-1">Cash Given</label>
+                    <input type="number" id="cash-received-input" step="0.01" class="w-full px-4 py-3 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary mb-4 text-center" placeholder="Enter cash amount">
                     
                     <!-- Preset cash buttons -->
-                    <div class="flex flex-wrap gap-2 mt-2">
+                    <div class="flex flex-wrap gap-2 mb-6">
                         <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="1">£1</button>
                         <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="5">£5</button>
                         <button class="cash-preset-btn outlined-button px-4 py-2 rounded-xl label-large" data-value="10">£10</button>
@@ -315,9 +323,16 @@
                         <button id="exact-cash-btn" class="outlined-button px-4 py-2 rounded-xl label-large">Exact</button>
                     </div>
 
-                    <p id="change-due" class="body-medium mt-4">Change Due: <span id="change-amount" class="font-bold">£0.00</span></p>
-                    <button id="cash-confirm-btn" class="filled-button w-full py-3 rounded-xl label-large mt-4">Complete Transaction</button>
-                    <button id="cash-back-btn" class="text-button w-full py-3 rounded-xl label-large mt-2">Back</button>
+                    <button id="cash-continue-btn" class="filled-button w-full py-3 rounded-xl label-large">Continue</button>
+                    <button id="cash-back-1-btn" class="text-button w-full py-3 rounded-xl label-large mt-2">Back</button>
+                </div>
+                <!-- Stage 2: Change Due Display -->
+                <div id="cash-stage-2" class="hidden flex flex-col items-center text-center">
+                    <p class="body-medium on-surface-variant-text mb-2">Total: <span id="total-display-small" class="font-bold on-surface-text">£0.00</span></p>
+                    <p class="body-medium on-surface-variant-text">Change Due</p>
+                    <p id="change-display" class="on-surface-text display-large mb-4">£0.00</p>
+                    <button id="complete-transaction-btn" class="filled-button w-full py-3 rounded-xl label-large">Complete Transaction</button>
+                    <button id="cash-back-2-btn" class="text-button w-full py-3 rounded-xl label-large mt-2">Back</button>
                 </div>
             </div>
         </div>
@@ -382,15 +397,28 @@
         const itemSearchInput = document.getElementById('item-search-input');
         const taxRateInput = document.getElementById('tax-rate-input');
         const currentTaxRateSpan = document.getElementById('current-tax-rate');
+        
+        // New cash checkout DOM elements
+        const paymentStep1 = document.getElementById('payment-step-1');
+        const cashStage1 = document.getElementById('cash-stage-1');
+        const cashStage2 = document.getElementById('cash-stage-2');
+        const totalDueDisplay = document.getElementById('total-due-display');
         const cashReceivedInput = document.getElementById('cash-received-input');
         const cashPresetButtons = document.querySelectorAll('.cash-preset-btn');
         const exactCashButton = document.getElementById('exact-cash-btn');
+        const cashContinueBtn = document.getElementById('cash-continue-btn');
+        const totalDisplaySmall = document.getElementById('total-display-small');
+        const changeDisplay = document.getElementById('change-display');
+        const completeTransactionBtn = document.getElementById('complete-transaction-btn');
+        const cashBack1Btn = document.getElementById('cash-back-1-btn');
+        const cashBack2Btn = document.getElementById('cash-back-2-btn');
 
         // --- State Management ---
         let cart = [];
         let products = [];
         let editItemIndex = -1;
         let taxRate = 0.05; // Default tax rate
+        let currentTotal = 0; // Store the total for the cash checkout process
 
         // --- Core Functions ---
 
@@ -596,11 +624,10 @@
                 showSnackbar("Cart is empty. Add items to checkout.");
                 return;
             }
-            document.getElementById('cash-amount-due').textContent = totalAmount.textContent;
-            document.getElementById('payment-step-1').classList.remove('hidden');
-            document.getElementById('payment-step-2').classList.add('hidden');
-            cashReceivedInput.value = '';
-            document.getElementById('change-amount').textContent = '£0.00';
+            currentTotal = parseFloat(totalAmount.textContent.substring(1));
+            paymentStep1.classList.remove('hidden');
+            cashStage1.classList.add('hidden');
+            cashStage2.classList.add('hidden');
             showDialog(checkoutDialog);
         });
         
@@ -627,8 +654,10 @@
 
         // Checkout Dialog Logic
         document.getElementById('pay-cash-btn').addEventListener('click', () => {
-            document.getElementById('payment-step-1').classList.add('hidden');
-            document.getElementById('payment-step-2').classList.remove('hidden');
+            totalDueDisplay.textContent = `£${currentTotal.toFixed(2)}`;
+            cashReceivedInput.value = '';
+            paymentStep1.classList.add('hidden');
+            cashStage1.classList.remove('hidden');
         });
 
         document.getElementById('pay-card-btn').addEventListener('click', () => {
@@ -642,16 +671,15 @@
         });
         
         document.getElementById('checkout-cancel-btn').addEventListener('click', hideAllDialogs);
-        document.getElementById('cash-back-btn').addEventListener('click', () => {
-            document.getElementById('payment-step-1').classList.remove('hidden');
-            document.getElementById('payment-step-2').classList.add('hidden');
+        
+        // Cash Stage 1 Logic
+        cashBack1Btn.addEventListener('click', () => {
+            cashStage1.classList.add('hidden');
+            paymentStep1.classList.remove('hidden');
         });
 
-        cashReceivedInput.addEventListener('input', (e) => {
-            const received = parseFloat(e.target.value) || 0;
-            const total = parseFloat(totalAmount.textContent.substring(1));
-            const change = received - total;
-            document.getElementById('change-amount').textContent = `£${Math.max(0, change).toFixed(2)}`;
+        cashReceivedInput.addEventListener('input', () => {
+            // This is just to allow input, no calculation until continue is clicked
         });
 
         // Preset cash buttons logic
@@ -659,28 +687,39 @@
             button.addEventListener('click', () => {
                 const value = button.dataset.value;
                 cashReceivedInput.value = parseFloat(value).toFixed(2);
-                cashReceivedInput.dispatchEvent(new Event('input'));
             });
         });
 
         // Exact cash button logic
         exactCashButton.addEventListener('click', () => {
-            const total = parseFloat(totalAmount.textContent.substring(1));
-            cashReceivedInput.value = total.toFixed(2);
-            cashReceivedInput.dispatchEvent(new Event('input'));
+            cashReceivedInput.value = currentTotal.toFixed(2);
         });
         
-        document.getElementById('cash-confirm-btn').addEventListener('click', () => {
+        // Cash Stage 1 -> Stage 2 transition
+        cashContinueBtn.addEventListener('click', () => {
             const received = parseFloat(cashReceivedInput.value);
-            const total = parseFloat(totalAmount.textContent.substring(1));
-            if (received >= total) {
-                showSnackbar('Transaction complete. Change due has been calculated.');
-                hideAllDialogs();
-                cart = [];
-                renderCart();
+            if (received >= currentTotal) {
+                const change = received - currentTotal;
+                totalDisplaySmall.textContent = `£${currentTotal.toFixed(2)}`;
+                changeDisplay.textContent = `£${change.toFixed(2)}`;
+                cashStage1.classList.add('hidden');
+                cashStage2.classList.remove('hidden');
             } else {
                 showSnackbar('Insufficient cash received.');
             }
+        });
+        
+        // Cash Stage 2 Logic
+        cashBack2Btn.addEventListener('click', () => {
+            cashStage2.classList.add('hidden');
+            cashStage1.classList.remove('hidden');
+        });
+
+        completeTransactionBtn.addEventListener('click', () => {
+            showSnackbar('Transaction complete. Change has been given.');
+            hideAllDialogs();
+            cart = [];
+            renderCart();
         });
 
         // Items Management Logic
