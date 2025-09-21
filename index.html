@@ -336,7 +336,7 @@
             </div>
             
             <!-- Mobile-only "View Cart" button -->
-            <button id="mobile-cart-btn" class="md:hidden fixed bottom-4 right-4 z-30 filled-button rounded-full p-4 shadow-lg flex items-center gap-2">
+            <button id="mobile-cart-btn" class="md:hidden fixed bottom-4 right-4 z-30 filled-button rounded-full py-3 px-6 shadow-lg flex items-center gap-2">
                 <i class="fa-solid fa-cart-shopping fa-xl on-primary-text"></i>
                 <span id="mobile-cart-total" class="label-large">£0.00</span>
             </button>
@@ -708,7 +708,6 @@
                 cartList.innerHTML = `<li class="body-medium on-surface-variant-text text-center py-8">Cart is empty.</li>`;
                 document.getElementById('checkout-btn').disabled = true;
                 document.getElementById('void-btn').disabled = true;
-                mobileCartTotalSpan.textContent = `£0.00`;
             } else {
                 document.getElementById('checkout-btn').disabled = false;
                 document.getElementById('void-btn').disabled = false;
@@ -763,7 +762,7 @@
                 cart.push({ ...itemToAdd, quantity: 1 });
             }
             renderCart();
-            showSnackbar(`Added ${itemToAdd.name} to cart.`);
+            // showSnackbar(`Added ${itemToAdd.name} to cart.`);
         };
         
         // --- Event Listeners ---
@@ -807,7 +806,7 @@
                 const index = parseInt(removeButton.dataset.index);
                 const removedItem = cart.splice(index, 1)[0];
                 renderCart();
-                showSnackbar(`Removed one ${removedItem.name}.`);
+                // showSnackbar(`Removed one ${removedItem.name}.`);
             }
         });
         
