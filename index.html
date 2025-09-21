@@ -7,7 +7,7 @@
     <!-- Tailwind CSS with JIT CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2eTDRqHk+oUv5z0P/W8Gz6F0H/Ea9/nQ8+K2/M5Z5aC5dF49+rFfE5d1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Inter & Roboto Flex Fonts from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +46,10 @@
                 --on-surface: 255, 255, 255;
                 --surface-container-low: 30, 30, 30;
                 --outline: 70, 70, 70;
+            }
+            .nav-rail {
+                background-color: rgb(var(--surface-container-low));
+                box-shadow: none;
             }
         }
 
@@ -167,11 +171,24 @@
             background-color: rgb(var(--primary-container));
             border-radius: 1.5rem;
         }
+        .nav-rail-spacer {
+            height: 1.5rem;
+        }
 
         /* Set a fixed size for Font Awesome icons to prevent layout shifts */
         .fa-solid {
             font-size: 24px;
             margin-bottom: 0.25rem;
+        }
+        
+        /* Hide scrollbar for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
         }
 
         /* Dialog Animation */
@@ -312,6 +329,19 @@
             transition: background-color 0.2s, box-shadow 0.2s;
             border: none;
         }
+        
+        /* Custom styles for new header and searchbox colors */
+        .sticky-header {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .search-box-bg {
+            background-color: #001f3f;
+            color: #e0e0e0;
+        }
+        .search-box-placeholder::placeholder {
+            color: #b0b0b0;
+        }
     </style>
 </head>
 <body class="flex h-screen">
@@ -333,13 +363,18 @@
     </nav>
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col md:flex-row">
+    <!-- The h-full class ensures this container fills the vertical space, preventing the body from scrolling. -->
+    <main class="flex-grow flex flex-col md:flex-row h-full">
         <!-- Sale View -->
-        <div id="sale-view" class="flex-1 p-6 overflow-y-auto" data-view-content>
-            <h1 class="headline-medium mb-6 on-surface-text">Quick Sale</h1>
-            <div id="item-panel" class="flex flex-col h-full">
-                <input type="text" id="item-search-input" placeholder="Search items..." class="px-4 py-2 rounded-xl on-surface-text primary-container-bg placeholder-on-primary-container-text focus:outline-none focus:ring-2 focus:ring-primary mb-6">
-                <div id="item-grid" class="item-grid flex-grow">
+        <div id="sale-view" class="flex-1 flex flex-col h-full" data-view-content>
+            <!-- Sticky Header for Quick Sale -->
+            <div class="sticky top-0 sticky-header z-10 px-6 py-4 flex items-center justify-between border-b md:border-b-0 md:border-r outline-border">
+                <h1 class="headline-medium">Quick Sale</h1>
+                <input type="text" id="item-search-input" placeholder="Search items..." class="px-4 py-2 w-full md:max-w-xs rounded-xl search-box-bg search-box-placeholder focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <!-- Item panel that is now scrollable without the ugly scrollbars -->
+            <div id="item-panel" class="flex-1 overflow-y-auto no-scrollbar p-6">
+                <div id="item-grid" class="item-grid">
                     <!-- Item cards will be rendered here -->
                 </div>
             </div>
@@ -352,7 +387,8 @@
         </div>
 
         <!-- Items Management View -->
-        <div id="items-view" class="flex-1 p-6 overflow-y-auto hidden" data-view-content>
+        <!-- The overflow-y-auto class ensures only this content area scrolls. -->
+        <div id="items-view" class="hidden flex-1 p-6 h-full overflow-y-auto" data-view-content>
             <div class="flex items-center justify-between pb-4 mb-4 border-b outline-border">
                 <h1 class="headline-medium on-surface-text">Item Catalog</h1>
                 <button id="add-item-btn" class="filled-button px-4 py-2 rounded-xl label-large">Add New Item</button>
@@ -365,7 +401,8 @@
         </div>
 
         <!-- Settings View -->
-        <div id="settings-view" class="flex-1 p-6 overflow-y-auto hidden" data-view-content>
+        <!-- The h-full class ensures this container fills its vertical space. -->
+        <div id="settings-view" class="hidden flex-1 p-6 h-full overflow-y-auto" data-view-content>
             <h1 class="headline-medium mb-6 on-surface-text">Settings</h1>
             <div class="surface-bg rounded-2xl p-6 shadow-md mb-6">
                 <h3 class="title-large mb-4">Display Grid</h3>
